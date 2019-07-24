@@ -94,7 +94,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		this.environment = environment;
 	}
 
-	//根据Spring DTD对Bean的定义规则解析Bean定义Document对象
+	//根据Spring对Bean的定义规则进行解析
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		//获得XML描述符
 		this.readerContext = readerContext;
@@ -136,41 +136,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 		this.delegate = parent;
 	}
-
-	protected BeanDefinitionParserDelegate createDelegate(
-			XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
-
-		BeanDefinitionParserDelegate delegate = createHelper(readerContext, root, parentDelegate);
-		if (delegate == null) {
-			delegate = new BeanDefinitionParserDelegate(readerContext, this.environment);
-			delegate.initDefaults(root, parentDelegate);
-		}
-		return delegate;
-	}
-
-	@Deprecated
-	protected BeanDefinitionParserDelegate createHelper(
-			XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
-
-		return null;
-	}
-
-	/**
-	 * Return the descriptor for the XML resource that this parser works on.
-	 */
-	protected final XmlReaderContext getReaderContext() {
-		return this.readerContext;
-	}
-
-	/**
-	 * Invoke the {@link org.springframework.beans.factory.parsing.SourceExtractor} to pull the
-	 * source metadata from the supplied {@link Element}.
-	 */
-	protected Object extractSource(Element ele) {
-		return this.readerContext.extractSource(ele);
-	}
-
-
+	
 	//使用Spring的Bean规则从Document的根元素开始进行Bean	Definition的解析
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		//Bean定义的Document对象是否使用了Spring默认的XML命名空间
@@ -216,34 +182,13 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
 			processBeanDefinition(ele, delegate);
 		}
+		//如果被解析的元素是beans，则递归调用doRegisterBeanDefinitions(Element root)方法
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
-			// recurse
 			doRegisterBeanDefinitions(ele);
 		}
 	}
 
 	
-	//使用Spring的Bean规则解析Document元素节点
-	private void (Element ele, BeanDefinitionParserDelegate delegate) {
-		//如果元素节点是<Import>导入元素，进行导入解析
-		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
-			importBeanDefinitionResource(ele);
-		}
-		//如果元素节点是<Alias>别名元素，进行别名解析
-		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
-			processAliasRegistration(ele);
-		}
-		//元素节点既不是导入元素，也不是别名元素，即普通的<Bean>元素，  
-		//按照Spring的Bean规则解析元素
-		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
-			processBeanDefinition(ele, delegate);
-		}
-		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
-			// recurse
-			doRegisterBeanDefinitions(ele);
-		}
-	}
-
 	//解析<Import>导入元素，从给定的导入路径加载Bean定义资源到Spring IoC容器中
 	protected void importBeanDefinitionResource(Element ele) {
 		//获取给定的导入元素的location属性
@@ -380,6 +325,38 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 	}
 
+	protected BeanDefinitionParserDelegate createDelegate(
+			XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
+
+		BeanDefinitionParserDelegate delegate = createHelper(readerContext, root, parentDelegate);
+		if (delegate == null) {
+			delegate = new BeanDefinitionParserDelegate(readerContext, this.environment);
+			delegate.initDefaults(root, parentDelegate);
+		}
+		return delegate;
+	}
+
+	@Deprecated
+	protected BeanDefinitionParserDelegate createHelper(
+			XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate) {
+
+		return null;
+	}
+
+	/**
+	 * Return the descriptor for the XML resource that this parser works on.
+	 */
+	protected final XmlReaderContext getReaderContext() {
+		return this.readerContext;
+	}
+
+	/**
+	 * Invoke the {@link org.springframework.beans.factory.parsing.SourceExtractor} to pull the
+	 * source metadata from the supplied {@link Element}.
+	 */
+	protected Object extractSource(Element ele) {
+		return this.readerContext.extractSource(ele);
+	}
 
 	/**
 	 * Allow the XML to be extensible by processing any custom element types first,

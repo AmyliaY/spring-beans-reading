@@ -347,32 +347,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			}
 		}
 	}
-
-	/**
-	 * Load bean definitions from the specified XML file.
-	 * @param inputSource the SAX InputSource to read from
-	 * @return the number of bean definitions found
-	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
-	 */
-	public int loadBeanDefinitions(InputSource inputSource) throws BeanDefinitionStoreException {
-		return loadBeanDefinitions(inputSource, "resource loaded through SAX InputSource");
-	}
-
-	/**
-	 * Load bean definitions from the specified XML file.
-	 * @param inputSource the SAX InputSource to read from
-	 * @param resourceDescription a description of the resource
-	 * (can be {@code null} or empty)
-	 * @return the number of bean definitions found
-	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
-	 */
-	public int loadBeanDefinitions(InputSource inputSource, String resourceDescription)
-			throws BeanDefinitionStoreException {
-
-		return doLoadBeanDefinitions(inputSource, new DescriptiveResource(resourceDescription));
-	}
-
-
+	
 	//从指定XML文件中实际载入BeanDefinition资源的方法
 	protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
 			throws BeanDefinitionStoreException {
@@ -408,6 +383,47 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Unexpected exception parsing XML document from " + resource, ex);
 		}
 	}
+	
+	//按照Spring的Bean语义要求将BeanDefinition资源解析并转换为容器内部数据结构
+	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
+		//得到BeanDefinitionDocumentReader来对xml格式的BeanDefinition解析
+		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		documentReader.setEnvironment(this.getEnvironment());
+		//获得容器中注册的Bean数量
+		int countBefore = getRegistry().getBeanDefinitionCount();
+		//解析过程入口，这里使用了委派模式，BeanDefinitionDocumentReader只是个接口，
+		//具体的解析实现过程由实现类DefaultBeanDefinitionDocumentReader完成
+		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		//统计解析的Bean数量
+		return getRegistry().getBeanDefinitionCount() - countBefore;
+	}
+
+	/**
+	 * Load bean definitions from the specified XML file.
+	 * @param inputSource the SAX InputSource to read from
+	 * @return the number of bean definitions found
+	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+	 */
+	public int loadBeanDefinitions(InputSource inputSource) throws BeanDefinitionStoreException {
+		return loadBeanDefinitions(inputSource, "resource loaded through SAX InputSource");
+	}
+
+	/**
+	 * Load bean definitions from the specified XML file.
+	 * @param inputSource the SAX InputSource to read from
+	 * @param resourceDescription a description of the resource
+	 * (can be {@code null} or empty)
+	 * @return the number of bean definitions found
+	 * @throws BeanDefinitionStoreException in case of loading or parsing errors
+	 */
+	public int loadBeanDefinitions(InputSource inputSource, String resourceDescription)
+			throws BeanDefinitionStoreException {
+
+		return doLoadBeanDefinitions(inputSource, new DescriptiveResource(resourceDescription));
+	}
+
+
+
 
 
 	/**
@@ -468,19 +484,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 	}
 
-	//按照Spring的Bean语义要求将BeanDefinition资源解析并转换为容器内部数据结构
-	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
-		//得到BeanDefinitionDocumentReader来对xml格式的BeanDefinition解析
-		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
-		documentReader.setEnvironment(this.getEnvironment());
-		//获得容器中注册的Bean数量
-		int countBefore = getRegistry().getBeanDefinitionCount();
-		//解析过程入口，这里使用了委派模式，BeanDefinitionDocumentReader只是个接口，
-		//具体的解析实现过程由实现类DefaultBeanDefinitionDocumentReader完成
-		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
-		//统计解析的Bean数量
-		return getRegistry().getBeanDefinitionCount() - countBefore;
-	}
+
 
 	/**
 	 * Create the {@link BeanDefinitionDocumentReader} to use for actually

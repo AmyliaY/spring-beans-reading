@@ -171,6 +171,17 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 		return counter;
 	}
 	
+	//loadBeanDefinitions()方法的重载方法之一，调用了另一个重载方法loadBeanDefinitions(String)
+	public int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException {
+		Assert.notNull(locations, "Location array must not be null");
+		//计数 加载了多少个配置文件
+		int counter = 0;
+		for (String location : locations) {
+			counter += loadBeanDefinitions(location);
+		}
+		return counter;
+	}
+	
 	//重载方法之一，调用了下面的loadBeanDefinitions(String, Set<Resource>)方法 
 	public int loadBeanDefinitions(String location) throws BeanDefinitionStoreException {
 		return loadBeanDefinitions(location, null);
@@ -229,17 +240,6 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 			}
 			return loadCount;
 		}
-	}
-
-	//loadBeanDefinitions()方法的重载方法之一，调用了另一个重载方法loadBeanDefinitions(String)
-	public int loadBeanDefinitions(String... locations) throws BeanDefinitionStoreException {
-		Assert.notNull(locations, "Location array must not be null");
-		//计数 加载了多少个配置文件
-		int counter = 0;
-		for (String location : locations) {
-			counter += loadBeanDefinitions(location);
-		}
-		return counter;
 	}
 
 }
