@@ -37,7 +37,7 @@ import org.springframework.beans.BeansException;
  * depends on the bean factory configuration: the API is the same. Since Spring
  * 2.0, further scopes are available depending on the concrete application
  * context (e.g. "request" and "session" scopes in a web environment).
- * 这个接口是由持有大量bean定义的对象实现的，每个都由字符串名称唯一标识。根据bean的定义，
+ * 这个接口是由持有大量beanDefinition的对象实现的，每个都由字符串名称唯一标识。根据bean的定义，
  * 工厂将返回包含对象的独立实例（原型设计模式）或单个共享实例（高级替代单例设计模式，其中实例是
  * 工厂范围内的单件）。将返回哪种类型的实例取决于bean工厂配置：API是相同的。从spring2.0开始，
  * 根据具体的应用程序上下文，可以使用更多的范围（例如Web环境中的“请求”和“会话”范围）。
