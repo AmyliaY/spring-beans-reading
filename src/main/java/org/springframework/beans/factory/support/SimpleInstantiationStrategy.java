@@ -56,14 +56,14 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 
 	//使用初始化策略实例化Bean对象
 	public Object instantiate(RootBeanDefinition beanDefinition, String beanName, BeanFactory owner) {
-		//如果Bean定义中没有方法覆盖，则就不需要CGLIB父类类的方法
+		//如果Bean定义中没有方法覆盖，则使用JDK动态代理实例化对象，否则使用CGLIB
 		if (beanDefinition.getMethodOverrides().isEmpty()) {
 			Constructor<?> constructorToUse;
 			synchronized (beanDefinition.constructorArgumentLock) {
-				//获取对象的构造方法或工厂方法
+				//获取对象的构造方法或生成对象的工厂方法对bean进行实例化
 				constructorToUse = (Constructor<?>) beanDefinition.resolvedConstructorOrFactoryMethod;
 				
-				//如果没有构造方法且没有工厂方法 
+				//如果没有构造方法
 				if (constructorToUse == null) {
 					//使用JDK的反射机制，判断要实例化的Bean是否是接口
 					final Class clazz = beanDefinition.getBeanClass();
@@ -93,7 +93,11 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
-			//使用CGLIB来实例化对象
+			/**
+			 * ！！！！！！！！！！！！！！
+			 * 使用CGLIB来实例化对象
+			 * ！！！！！！！！！！！！！！
+			 */
 			return instantiateWithMethodInjection(beanDefinition, beanName, owner);
 		}
 	}

@@ -899,6 +899,12 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 			if (nestedBw == this) {
 				pv.getOriginalPropertyValue().resolvedTokens = tokens;
 			}
+			
+			/**
+			 * ！！！！！！！！！！！！！！！
+			 * 进入bean属性值注入的具体实现
+			 * ！！！！！！！！！！！！！！！
+			 */
 			nestedBw.setPropertyValue(tokens, pv);
 		}
 		else {
@@ -906,7 +912,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 		}
 	}
 
-	//实现属性依赖注入功能
+	//实现属性值依赖注入的具体实现
 	@SuppressWarnings("unchecked")
 	private void setPropertyValue(PropertyTokenHolder tokens, PropertyValue pv) throws BeansException {
 		//PropertyTokenHolder主要保存属性的名称、路径、以及集合的size等信息

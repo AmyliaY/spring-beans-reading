@@ -61,7 +61,7 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 	private static final int METHOD_REPLACER = 2;
 
 
-	@Override
+	//下面两个方法都通过实例化自己的内部类，然后调用该内部类对象的实例化方法完成实例化
 	protected Object instantiateWithMethodInjection(
 			RootBeanDefinition beanDefinition, String beanName, BeanFactory owner) {
 
@@ -109,9 +109,7 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 			});
 
 			//使用CGLIB的create方法生成实例对象
-			return (ctor == null) ?
-					enhancer.create() :
-					enhancer.create(ctor.getParameterTypes(), args);
+			return (ctor == null) ? enhancer.create() : enhancer.create(ctor.getParameterTypes(), args);
 		}
 
 
