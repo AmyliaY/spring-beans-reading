@@ -61,11 +61,12 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 	private static final int METHOD_REPLACER = 2;
 
 
-	//下面两个方法都通过实例化自己的内部类，然后调用该内部类对象的实例化方法完成实例化
+	//下面两个方法都通过实例化自己的私有静态内部类CglibSubclassCreator，
+	//然后调用该内部类对象的实例化方法instantiate()完成实例化
 	protected Object instantiateWithMethodInjection(
 			RootBeanDefinition beanDefinition, String beanName, BeanFactory owner) {
 
-		// Must generate CGLIB subclass.
+		// 必须生成cglib子类
 		return new CglibSubclassCreator(beanDefinition, owner).instantiate(null, null);
 	}
 
@@ -79,8 +80,7 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 
 
 	/**
-	 * An inner class created for historical reasons to avoid external CGLIB dependency
-	 * in Spring versions earlier than 3.2.
+	 * 为避免3.2之前的Spring版本中的外部cglib依赖而创建的内部类。
 	 */
 	private static class CglibSubclassCreator {
 
@@ -97,9 +97,9 @@ public class CglibSubclassingInstantiationStrategy extends SimpleInstantiationSt
 
 		//使用CGLIB进行Bean对象实例化
 		public Object instantiate(Constructor ctor, Object[] args) {
-			//实例化Enhancer对象，并为Enhancer对象设置生成Java对象的参数，比如：基类、回调方法等
+			//实例化Enhancer对象，并为Enhancer对象设置父类，生成Java对象的参数，比如：基类、回调方法等
 			Enhancer enhancer = new Enhancer();
-			//将Bean本身作为其基类
+			//将Bean本身作为其父类
 			enhancer.setSuperclass(this.beanDefinition.getBeanClass());
 			enhancer.setCallbackFilter(new CallbackFilterImpl());
 			enhancer.setCallbacks(new Callback[] {

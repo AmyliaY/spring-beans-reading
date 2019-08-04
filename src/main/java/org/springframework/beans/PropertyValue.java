@@ -54,7 +54,7 @@ public class PropertyValue extends BeanMetadataAttributeAccessor implements Seri
 
 	private Object convertedValue;
 
-	/** Package-visible field that indicates whether conversion is necessary */
+	/** 包可见字段，指示是否需要转换 */
 	volatile Boolean conversionNecessary;
 
 	/** Package-visible field for caching the resolved property path tokens */

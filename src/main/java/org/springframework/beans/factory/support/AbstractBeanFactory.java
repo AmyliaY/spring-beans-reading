@@ -187,31 +187,27 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 
 	//---------------------------------------------------------------------
-	// BeanFactory接口的实现，下列的getBean()方法不论是哪种重载，都会走
-	// doGetBean(final String name, final Class<T> requiredType, final Object[] args, boolean typeCheckOnly)实现方法
+	// BeanFactory接口的实现，下列的getBean()方法不论是哪种重载，最后都会走
+	// doGetBean(final String name, final Class<T> requiredType, final Object[] args, boolean typeCheckOnly)的具体实现
 	//---------------------------------------------------------------------
 
-	//获取IOC容器中指定名称的Bean 
+	//获取IOC容器中指定名称的Bean
 	public Object getBean(String name) throws BeansException {
-		//doGetBean才是真正向IoC容器获取被管理Bean的过程
 		return doGetBean(name, null, null, false);
 	}
 
 	//获取IOC容器中指定名称和类型的Bean
 	public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
-		//doGetBean才是真正向IoC容器获取被管理Bean的过程
 		return doGetBean(name, requiredType, null, false);
 	}
 
 	//获取IOC容器中指定名称和参数的Bean
 	public Object getBean(String name, Object... args) throws BeansException {
-		//doGetBean才是真正向IoC容器获取被管理Bean的过程 
 		return doGetBean(name, null, args, false);
 	}
 
 	//获取IOC容器中指定名称、类型和参数的Bean
 	public <T> T getBean(String name, Class<T> requiredType, Object... args) throws BeansException {
-		//doGetBean才是真正向IoC容器获取被管理Bean的过程
 		return doGetBean(name, requiredType, args, false);
 	}
 
@@ -250,7 +246,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 			//获取当前容器的父容器
 			BeanFactory parentBeanFactory = getParentBeanFactory();
-			//如果不能通过beanName从当前容器获取到BeanDefinition，且当前容器的父容器不为空
+			//如果当前容器中没有指定的bean，且当前容器的父容器不为空
 			//则从父容器中去找，如果父容器也没有，则沿着当前容器的继承体系一直向上查找
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				//解析指定Bean名称的原始名称
@@ -260,7 +256,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					return (T) parentBeanFactory.getBean(nameToLookup, args);
 				}
 				else {
-					//委派父级容器根据指定名称和类型查找
+					//委派父容器根据指定名称和类型查找
 					return parentBeanFactory.getBean(nameToLookup, requiredType);
 				}
 			}
@@ -276,29 +272,34 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
 
-				//获取当前Bean依赖的所有Bean，下面的getBean(dependsOnBean)方法会触发一个getBean的递归调用，
-				//直到取到一个没有任何依赖的bean为止
+				//获取当前Bean依赖的所有Bean，下面的getBean(dependsOnBean)方法会触发getBean()的递归调用，
+				//直到取到一个不依赖任何其它bean的bean为止
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dependsOnBean : dependsOn) {
-						//递归调用getBean方法，获取当前Bean的依赖Bean
+						//递归调用getBean()方法，获取当前Bean所依赖的bean
 						getBean(dependsOnBean);
-						//把被依赖Bean注册给当前依赖的Bean
+						//把当前bean所依赖的bean进行注入
+						//（也就是通过setter或构造方法将依赖的bean赋值给当前bean对应的属性）
 						registerDependentBean(dependsOnBean, beanName);
 					}
 				}
 
-				//创建单例模式Bean的实例对象
+				//创建单例模式bean的实例对象
 				if (mbd.isSingleton()) {
 					//这里使用了一个匿名内部类，创建Bean实例对象，并且注册给所依赖的对象
 					sharedInstance = getSingleton(beanName, new ObjectFactory<Object>() {
 						public Object getObject() throws BeansException {
 							try {
-								//创建一个指定Bean实例对象，如果有父级继承，则合并子类和父类的定义
+								/**
+								 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+								 * 创建一个指定Bean实例对象，如果有父级继承，则合并子类和父类的定义
+								 * 走子类中的实现
+								 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+								 */
 								return createBean(beanName, mbd, args);
 							}
 							catch (BeansException ex) {
-								//显式地从容器单例模式Bean缓存中清除实例对象
 								destroySingleton(beanName);
 								throw ex;
 							}
@@ -308,18 +309,23 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
-				//IOC容器创建原型模式Bean实例对象
+				//IoC容器创建原型模式Bean实例对象
 				else if (mbd.isPrototype()) {
 					//原型模式(Prototype)是每次都会创建一个新的对象
 					Object prototypeInstance = null;
 					try {
 						//回调beforePrototypeCreation方法，默认的功能是注册当前创建的原型对象
 						beforePrototypeCreation(beanName);
-						//创建指定Bean对象实例
+						/**
+						 * ！！！！！！！！！！！！！！
+						 * 创建指定Bean对象实例
+						 * 走子类中的实现
+						 * ！！！！！！！！！！！！！！
+						 */
 						prototypeInstance = createBean(beanName, mbd, args);
 					}
 					finally {
-						//回调afterPrototypeCreation方法，默认的功能告诉IOC容器指定Bean的原型对象不再创建了
+						//回调afterPrototypeCreation方法，默认的功能告诉IoC容器指定Bean的原型对象不再创建了
 						afterPrototypeCreation(beanName);
 					}
 					//获取给定Bean的实例对象
@@ -328,8 +334,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				//要创建的Bean既不是单例模式，也不是原型模式，则根据Bean定义资源中  
 		        //配置的生命周期范围，选择实例化Bean的合适方法，这种在Web应用程序中  
-		        //比较常用，如：request、session、application等生命周期 
+		        //比较常用，如：request、session、application等的生命周期 
 				else {
+					//获取此bean生命周期的范围
 					String scopeName = mbd.getScope();
 					final Scope scope = this.scopes.get(scopeName);
 					//Bean定义资源中没有配置生命周期范围，则Bean定义不合法
@@ -342,6 +349,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							public Object getObject() throws BeansException {
 								beforePrototypeCreation(beanName);
 								try {
+									/**
+									 * ！！！！！！！！！！！
+									 * 创建bean实例对象
+									 * 走子类中的实现
+									 * ！！！！！！！！！！！
+									 */
 									return createBean(beanName, mbd, args);
 								}
 								finally {
@@ -366,7 +379,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 		}
 
-		//对创建的bean实例对象进行类型检查，如果没问题就返回这个已经包含依赖关系的bean
+		//对创建的bean实例对象进行非空验证和类型检查，如果没问题就返回这个已经完成依赖注入的bean
 		if (requiredType != null && bean != null && !requiredType.isAssignableFrom(bean.getClass())) {
 			try {
 				return getTypeConverter().convertIfNecessary(bean, requiredType);

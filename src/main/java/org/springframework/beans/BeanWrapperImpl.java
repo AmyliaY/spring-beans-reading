@@ -884,6 +884,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 
 	@Override
 	public void setPropertyValue(PropertyValue pv) throws BeansException {
+		//PropertyTokenHolder是一个用于内部使用的内部类
 		PropertyTokenHolder tokens = (PropertyTokenHolder) pv.resolvedTokens;
 		if (tokens == null) {
 			String propertyName = pv.getName();
@@ -912,16 +913,21 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 		}
 	}
 
-	//实现属性值依赖注入的具体实现
+	/**
+	 * ！！！！！！！！！！！！！！！！
+	 * 实现属性值依赖注入的具体实现
+	 * ！！！！！！！！！！！！！！！！
+	 */
 	@SuppressWarnings("unchecked")
 	private void setPropertyValue(PropertyTokenHolder tokens, PropertyValue pv) throws BeansException {
 		//PropertyTokenHolder主要保存属性的名称、路径、以及集合的size等信息
 		String propertyName = tokens.canonicalName;
 		String actualName = tokens.actualName;
 
+		//对集合类型的属性注入
 		//keys是用来保存集合类型属性的size
 		if (tokens.keys != null) {
-			//将属性信息拷贝
+			//将属性信息从tokens拷贝到getterTokens
 			PropertyTokenHolder getterTokens = new PropertyTokenHolder();
 			getterTokens.canonicalName = tokens.canonicalName;
 			getterTokens.actualName = tokens.actualName;
@@ -929,8 +935,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 			System.arraycopy(tokens.keys, 0, getterTokens.keys, 0, tokens.keys.length - 1);
 			Object propValue;
 			try {
-				//获取属性值，该方法内部使用JDK的内省(Introspector)机制
-	            //调用属性的getter(readerMethod)方法，获取属性的值 
+	            //通过反射机制，调用属性的getter方法获取属性值 
 				propValue = getPropertyValue(getterTokens);
 			}
 			catch (NotReadablePropertyException ex) {
@@ -952,7 +957,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 							"in indexed property path '" + propertyName + "': returned null");
 				}
 			}
-			//注入array类型的属性值
+			//如果属性值是Array数组类型的，则注入array类型的属性值
 			if (propValue.getClass().isArray()) {
 				//获取属性的描述符
 				PropertyDescriptor pd = getCachedIntrospectionResults().getPropertyDescriptor(actualName);
@@ -976,10 +981,10 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 							"Invalid array index in property path '" + propertyName + "'", ex);
 				}
 			}
-			//注入list类型的属性值
+			//如果属性值是List类型的，则注入list类型的属性值
 			else if (propValue instanceof List) {
 				PropertyDescriptor pd = getCachedIntrospectionResults().getPropertyDescriptor(actualName);
-				//获取list集合的类型
+				//获取list集合中元素的类型
 				Class requiredType = GenericCollectionTypeResolver.getCollectionReturnType(
 						pd.getReadMethod(), tokens.keys.length);
 				List list = (List) propValue;
@@ -1020,7 +1025,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 					}
 				}
 			}
-			//注入map类型的属性值
+			//如果属性值是Map类型的，则注入Map类型的属性值
 			else if (propValue instanceof Map) {
 				PropertyDescriptor pd = getCachedIntrospectionResults().getPropertyDescriptor(actualName);
 				//获取map集合key的类型
@@ -1044,19 +1049,18 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 				//将解析后的key和value值赋值给map集合属性
 				map.put(convertedMapKey, convertedMapValue);
 			}
-			//对非集合类型的属性注入
 			else {
 				throw new InvalidPropertyException(getRootClass(), this.nestedPath + propertyName,
 						"Property referenced in indexed property path '" + propertyName +
 						"' is neither an array nor a List nor a Map; returned value was [" + pv.getValue() + "]");
 			}
 		}
-
+		//对非集合类型的属性注入
 		else {
 			PropertyDescriptor pd = pv.resolvedDescriptor;
 			if (pd == null || !pd.getWriteMethod().getDeclaringClass().isInstance(this.object)) {
 				pd = getCachedIntrospectionResults().getPropertyDescriptor(actualName);
-				//无法获取到属性名或者属性没有提供setter(写方法)方法
+				//如果无法获取到属性名或者属性没有提供setter赋值方法
 				if (pd == null || pd.getWriteMethod() == null) {
 					//如果属性值是可选的，即不是必须的，则忽略该属性值
 					if (pv.isOptional()) {
@@ -1085,10 +1089,9 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 					}
 					else {
 						if (isExtractOldValueForEditor() && pd.getReadMethod() != null) {
-							//获取属性的getter方法(读方法)，JDK内省机制
+							//获取属性的getter方法
 							final Method readMethod = pd.getReadMethod();
-							//如果属性的getter方法不是public访问控制权限的，即访问控制权限比较严格，  
-	                        //则使用JDK的反射机制强行访问非public的方法(暴力读取属性值) 
+							//如果属性的getter方法无法访问，则使用JDK的反射机制强行访问(暴力读取属性值) 
 							if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers()) &&
 									!readMethod.isAccessible()) {
 								if (System.getSecurityManager()!= null) {
@@ -1136,8 +1139,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 				final Method writeMethod = (pd instanceof GenericTypeAwarePropertyDescriptor ?
 						((GenericTypeAwarePropertyDescriptor) pd).getWriteMethodForActualAccess() :
 						pd.getWriteMethod());
-				//如果属性的setter方法是非public，即访问控制权限比较严格，则使用JDK的反射机制，  
-	            //强行设置setter方法可访问(暴力为属性赋值)  
+				//如果属性的setter方法无法访问，则强行设置setter方法可访问(暴力为属性赋值)  
 				if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers()) && !writeMethod.isAccessible()) {
 					if (System.getSecurityManager()!= null) {
 						AccessController.doPrivileged(new PrivilegedAction<Object>() {
@@ -1155,9 +1157,9 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 				 //如果使用了JDK的安全机制，则需要权限验证 
 				if (System.getSecurityManager() != null) {
 					try {
-						//将属性值设置到属性上去 
 						AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
 							public Object run() throws Exception {
+								//将属性值设置到属性上去 
 								writeMethod.invoke(object, value);
 								return null;
 							}
@@ -1168,6 +1170,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 					}
 				}
 				else {
+					//将属性值设置到属性上去 
 					writeMethod.invoke(this.object, value);
 				}
 			}
@@ -1207,7 +1210,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 
 
 	//---------------------------------------------------------------------
-	// Inner class for internal use
+	// 用于内部使用的内部类
 	//---------------------------------------------------------------------
 
 	private static class PropertyTokenHolder {
