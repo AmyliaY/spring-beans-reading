@@ -1068,7 +1068,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 								"' - property not found on bean class [" + getRootClass().getName() + "]");
 						return;
 					}
-					//如果属性值是必须的，则抛出无法给属性赋值，因为没提供setter方法异常
+					//如果属性值是必须的，则抛出无法给属性赋值，因为没提供setter方法的异常
 					else {
 						PropertyMatches matches = PropertyMatches.forProperty(propertyName, getRootClass());
 						throw new NotWritablePropertyException(
@@ -1091,7 +1091,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 						if (isExtractOldValueForEditor() && pd.getReadMethod() != null) {
 							//获取属性的getter方法
 							final Method readMethod = pd.getReadMethod();
-							//如果属性的getter方法无法访问，则使用JDK的反射机制强行访问(暴力读取属性值) 
+							//如果属性的getter方法无法访问，则使用Java的反射机制强行访问(暴力读取属性值) 
 							if (!Modifier.isPublic(readMethod.getDeclaringClass().getModifiers()) &&
 									!readMethod.isAccessible()) {
 								if (System.getSecurityManager()!= null) {
@@ -1135,7 +1135,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 					}
 					pv.getOriginalPropertyValue().conversionNecessary = (valueToApply != originalValue);
 				}
-				//根据JDK的内省机制，获取属性的setter(写方法)方法
+				//根据Java的内省机制，获取属性的setter(写方法)方法
 				final Method writeMethod = (pd instanceof GenericTypeAwarePropertyDescriptor ?
 						((GenericTypeAwarePropertyDescriptor) pd).getWriteMethodForActualAccess() :
 						pd.getWriteMethod());
@@ -1154,7 +1154,7 @@ public class BeanWrapperImpl extends AbstractPropertyAccessor implements BeanWra
 					}
 				}
 				final Object value = valueToApply;
-				 //如果使用了JDK的安全机制，则需要权限验证 
+				 //如果使用了Java的安全机制，则需要权限验证 
 				if (System.getSecurityManager() != null) {
 					try {
 						AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {

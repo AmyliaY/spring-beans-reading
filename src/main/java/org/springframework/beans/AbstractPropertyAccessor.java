@@ -53,12 +53,12 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 		setPropertyValues(new MutablePropertyValues(map));
 	}
 
-	public void setPropertyValues(PropertyValues pvs) throws BeansException {
-		setPropertyValues(pvs, false, false);
-	}
-
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown) throws BeansException {
 		setPropertyValues(pvs, ignoreUnknown, false);
+	}
+	
+	public void setPropertyValues(PropertyValues pvs) throws BeansException {
+		setPropertyValues(pvs, false, false);
 	}
 
 	public void setPropertyValues(PropertyValues pvs, boolean ignoreUnknown, boolean ignoreInvalid)
@@ -80,13 +80,11 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 				if (!ignoreUnknown) {
 					throw ex;
 				}
-				// Otherwise, just ignore it and continue...
 			}
 			catch (NullValueInNestedPathException ex) {
 				if (!ignoreInvalid) {
 					throw ex;
 				}
-				// Otherwise, just ignore it and continue...
 			}
 			catch (PropertyAccessException ex) {
 				if (propertyAccessExceptions == null) {
@@ -96,7 +94,7 @@ public abstract class AbstractPropertyAccessor extends TypeConverterSupport impl
 			}
 		}
 
-		// If we encountered individual exceptions, throw the composite exception.
+		// 如果遇到个别异常，则抛出复合异常
 		if (propertyAccessExceptions != null) {
 			PropertyAccessException[] paeArray =
 					propertyAccessExceptions.toArray(new PropertyAccessException[propertyAccessExceptions.size()]);

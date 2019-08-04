@@ -117,7 +117,7 @@ class BeanDefinitionValueResolver {
 		//对集合数组类型的属性解析
 		else if (value instanceof ManagedArray) {
 			ManagedArray array = (ManagedArray) value;
-			//获取数组的类型
+			//获取数组中元素的类型
 			Class<?> elementType = array.resolvedElementType;
 			if (elementType == null) {
 				 //获取数组元素的类型
