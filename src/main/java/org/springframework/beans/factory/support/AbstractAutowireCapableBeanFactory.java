@@ -1289,24 +1289,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 
 	/**
-	 * Fill in any missing property values with references to
-	 * other beans in this factory if autowire is set to "byName".
-	 * @param beanName the name of the bean we're wiring up.
-	 * Useful for debugging messages; not used functionally.
-	 * @param mbd bean definition to update through autowiring
-	 * @param bw BeanWrapper from which we can obtain information about the bean
-	 * @param pvs the PropertyValues to register wired objects with
+	 * 根据名称对属性进行自动依赖注入
+	 * 如果autowire设置为“byname”，则使用对该工厂中其他bean的引用填充任何缺少的属性值
 	 */
-	//根据名称对属性进行自动依赖注入
 	protected void autowireByName(
 			String beanName, AbstractBeanDefinition mbd, BeanWrapper bw, MutablePropertyValues pvs) {
 
-		//对Bean对象中非简单属性(不是简单继承的对象，如8中原始类型，字符串，URL等都是简单属性)进行处理  
+		//对Bean对象中非简单属性(不是简单继承的对象，如八大基本类型，字符串，URL等都是简单属性进行处理  
 		String[] propertyNames = unsatisfiedNonSimpleProperties(mbd, bw);
 		for (String propertyName : propertyNames) {
 			//如果Spring IOC容器中包含指定名称的Bean
 			if (containsBean(propertyName)) {
-				//调用getBean方法向IoC容器索取指定名称的Bean实例，迭代触发属性的初始化和依赖注入 
+				//调用getBean()方法向IoC容器索取指定名称的Bean实例，迭代触发属性的初始化和依赖注入 
 				Object bean = getBean(propertyName);
 				//为指定名称的属性赋予属性值
 				pvs.add(propertyName, bean);
