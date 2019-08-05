@@ -86,17 +86,10 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	}
 
 	/**
-	 * Obtain an object to expose from the given FactoryBean.
-	 * @param factory the FactoryBean instance
-	 * @param beanName the name of the bean
-	 * @param shouldPostProcess whether the bean is subject for post-processing
-	 * @return the object obtained from the FactoryBean
-	 * @throws BeanCreationException if FactoryBean object creation failed
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 * 从给定的FactoryBean获取所要的对象
 	 */
-	//Bean工厂生产Bean实例对象
 	protected Object getObjectFromFactoryBean(FactoryBean<?> factory, String beanName, boolean shouldPostProcess) {
-		//Bean工厂是单态模式，并且Bean工厂缓存中存在指定名称的Bean实例对象
+		//如果Bean工厂是单态模式，且Bean工厂缓存中存在指定名称的Bean实例对象
 		if (factory.isSingleton() && containsSingleton(beanName)) {
 			//多线程同步，以防止数据不一致
 			synchronized (getSingletonMutex()) {
@@ -119,15 +112,8 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 	}
 
 	/**
-	 * Obtain an object to expose from the given FactoryBean.
-	 * @param factory the FactoryBean instance
-	 * @param beanName the name of the bean
-	 * @param shouldPostProcess whether the bean is subject for post-processing
-	 * @return the object obtained from the FactoryBean
-	 * @throws BeanCreationException if FactoryBean object creation failed
-	 * @see org.springframework.beans.factory.FactoryBean#getObject()
+	 * 从给定的FactoryBean获取所需要的对象
 	 */
-	//调用Bean工厂的getObject方法生产指定Bean的实例对象
 	private Object doGetObjectFromFactoryBean(
 			final FactoryBean<?> factory, final String beanName, final boolean shouldPostProcess)
 			throws BeanCreationException {
@@ -137,11 +123,11 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			if (System.getSecurityManager() != null) {
 				AccessControlContext acc = getAccessControlContext();
 				try {
-					//实现PrivilegedExceptionAction接口的匿名内置类  
-	                //根据JVM检查权限，然后决定BeanFactory创建实例对象 
+					//实现了PrivilegedExceptionAction接口的匿名内置类  
+	                //根据JVM检查权限，然后调用FactoryBean接口实现类的创建对象方法
 					object = AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
 						public Object run() throws Exception {
-								//调用BeanFactory接口实现类的创建对象方法
+								//调用FactoryBean接口实现类的创建对象方法
 								return factory.getObject();
 							}
 						}, acc);
@@ -151,7 +137,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				}
 			}
 			else {
-				//调用BeanFactory接口实现类的创建对象方法
+				//调用FactoryBean接口实现类的创建对象方法
 				object = factory.getObject();
 			}
 		}
@@ -162,9 +148,8 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 			throw new BeanCreationException(beanName, "FactoryBean threw exception on object creation", ex);
 		}
 
-
-		// Do not accept a null value for a FactoryBean that's not fully
-		// initialized yet: Many FactoryBeans just return null then.
+		//对于未完全接受的FactoryBean，不接受空值
+		//已经初始化：许多factorybeans只是返回空值
 		//创建出来的实例对象为null，或者因为单态对象正在创建而返回null
 		if (object == null && isSingletonCurrentlyInCreation(beanName)) {
 			throw new BeanCurrentlyInCreationException(
