@@ -1516,24 +1516,6 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 	}
 
-
-	/**
-	 * Initialize the given bean instance, applying factory callbacks
-	 * as well as init methods and bean post processors.
-	 * <p>Called from {@link #createBean} for traditionally defined beans,
-	 * and from {@link #initializeBean} for existing bean instances.
-	 * @param beanName the bean name in the factory (for debugging purposes)
-	 * @param bean the new bean instance we may need to initialize
-	 * @param mbd the bean definition that the bean was created with
-	 * (can also be {@code null}, if given an existing bean instance)
-	 * @return the initialized bean instance (potentially wrapped)
-	 * @see BeanNameAware
-	 * @see BeanClassLoaderAware
-	 * @see BeanFactoryAware
-	 * @see #applyBeanPostProcessorsBeforeInitialization
-	 * @see #invokeInitMethods
-	 * @see #applyBeanPostProcessorsAfterInitialization
-	 */
 	 //初始容器创建的Bean实例对象，为其添加BeanPostProcessor后置处理器
 	protected Object initializeBean(final String beanName, final Object bean, RootBeanDefinition mbd) {
 		//JDK的安全机制验证权限
@@ -1548,6 +1530,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
+			//这里实现了bean对IoC容器的感知
 			invokeAwareMethods(beanName, bean);
 		}
 
@@ -1585,6 +1568,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (bean instanceof BeanClassLoaderAware) {
 				((BeanClassLoaderAware) bean).setBeanClassLoader(getBeanClassLoader());
 			}
+			
+			/**
+			 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+			 * 如果这个bean实现了BeanFactoryAware接口，则将IoC容器作为属性设置到这个bean中
+			 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+			 */
 			if (bean instanceof BeanFactoryAware) {
 				((BeanFactoryAware) bean).setBeanFactory(AbstractAutowireCapableBeanFactory.this);
 			}
