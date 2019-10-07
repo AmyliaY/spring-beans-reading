@@ -48,6 +48,9 @@ public abstract class AbstractBeanDefinitionReader implements EnvironmentCapable
 	/** Logger available to subclasses */
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	/**
+	 * 在实例化XmlBeanDefinitionReader时进行了设置
+	 */
 	private final BeanDefinitionRegistry registry;
 
 	/**

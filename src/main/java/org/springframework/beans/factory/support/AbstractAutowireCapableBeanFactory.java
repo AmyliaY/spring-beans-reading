@@ -1304,7 +1304,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				Object bean = getBean(propertyName);
 				//为指定名称的属性赋予属性值
 				pvs.add(propertyName, bean);
-				//指定名称属性注册依赖Bean名称，进行属性依赖注入
+				//为beanName对应的BeanDefinition注入依赖的Bean
 				registerDependentBean(propertyName, beanName);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Added autowiring by name from bean name '" + beanName +

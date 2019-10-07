@@ -211,7 +211,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		return doGetBean(name, requiredType, args, false);
 	}
 
-	//真正实现向IOC容器获取Bean的功能，也是触发依赖注入(DI)功能的地方
+	/**
+	 * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 * 真正实现向IOC容器获取Bean的功能，也是触发依赖注入(DI)功能的地方
+	 * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 */
 	@SuppressWarnings("unchecked")
 	protected <T> T doGetBean(final String name, final Class<T> requiredType, final Object[] args, 
 			boolean typeCheckOnly) throws BeansException {
@@ -234,8 +238,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 		    //获取给定Bean的实例对象，主要是完成FactoryBean的相关处理  
-            //注意：BeanFactory本质上是一个IoC容器，而FactoryBean是IoC容器中一种特殊的工厂bean
-            //能够生产其他对象，注意两者之间的区别
+            //注意：BeanFactory本质上是一个IoC容器，主要维护了beanName和beanDefinition的关系，
+			//而FactoryBean是IoC容器中一种特殊的bean，能够生产bean的实例化对象，主要完成实例化bean的获取
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
@@ -279,8 +283,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					for (String dependsOnBean : dependsOn) {
 						//递归调用getBean()方法，获取当前Bean所依赖的bean
 						getBean(dependsOnBean);
-						//把当前bean所依赖的bean进行注入
-						//（也就是通过setter或构造方法将依赖的bean赋值给当前bean对应的属性）
+						// 获取当前bean的所有依赖bean，为后面的依赖注入做准备
+						// 这样DI时就可以通过getBean()的递归调用，将当前bean所依赖的bean实例化并注入
 						registerDependentBean(dependsOnBean, beanName);
 					}
 				}
@@ -293,7 +297,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							try {
 								/**
 								 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
-								 * 创建一个指定Bean实例对象，如果有父级继承，则合并子类和父类的定义
+								 * 创建一个指定的Bean实例对象，如果有父级继承，则合并子类和父类的定义
 								 * 走子类中的实现
 								 * ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
 								 */

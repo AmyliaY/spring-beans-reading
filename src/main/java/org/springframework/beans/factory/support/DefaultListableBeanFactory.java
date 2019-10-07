@@ -143,7 +143,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	/** Map of singleton-only bean names keyed by dependency type */
 	private final Map<Class<?>, String[]> singletonBeanNamesByType = new ConcurrentHashMap<Class<?>, String[]>(64);
 
-	/** List of bean definition names, in registration order */
+	/** 按注册顺序排列的beanDefinition名称列表 */
 	private final List<String> beanDefinitionNames = new ArrayList<String>();
 
 	/** Whether bean definition metadata may be cached for all beans */
@@ -664,6 +664,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		//注册的过程中需要线程同步，以保证数据的一致性
+		//beanDefinitionMap就是IoC容器的实际载体
 		synchronized (this.beanDefinitionMap) {
 			Object oldBeanDefinition = this.beanDefinitionMap.get(beanName);
 			
@@ -687,6 +688,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				this.beanDefinitionNames.add(beanName);
 				this.frozenBeanDefinitionNames = null;
 			}
+			// 将相关联的beanName和beanDefinition存入IoC容器
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		//重置所有已经注册过的BeanDefinition的缓存

@@ -302,7 +302,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
-	//通过encodedResource进行资源解析，encodedResource对象持有resource对象和encoding编码格式
+	//通过encodedResource进行资源解析，encodedResource对象持有resource对象和encoding编码格式、charset字符集
 	public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
 		Assert.notNull(encodedResource, "EncodedResource must not be null");
 		if (logger.isInfoEnabled()) {
@@ -384,9 +384,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		}
 	}
 	
-	//按照Spring的Bean语义要求将BeanDefinition资源解析并转换为容器内部数据结构
+	//按照Spring的Bean语义要求将XML中配置的bean 解析并转换为容器内部的数据结构BeanDefinition
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
-		//得到BeanDefinitionDocumentReader来对xml格式的BeanDefinition解析
+		//得到BeanDefinitionDocumentReader来对xml格式的BeanDefinition进行解析
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
 		documentReader.setEnvironment(this.getEnvironment());
 		//获得容器中注册的Bean数量

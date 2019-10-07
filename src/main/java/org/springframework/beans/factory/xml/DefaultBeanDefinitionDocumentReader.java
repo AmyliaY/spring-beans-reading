@@ -96,7 +96,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 	//根据Spring对Bean的定义规则进行解析
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
-		//获得XML描述符
+
 		this.readerContext = readerContext;
 		logger.debug("Loading bean definitions");
 		//获得Document的根元素
@@ -122,7 +122,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 
 		//具体的解析过程由BeanDefinitionParserDelegate实现，  
-	    //BeanDefinitionParserDelegate中定义了Spring Bean定义XML文件的各种元素 
+	    //BeanDefinitionParserDelegate中定义了用于解析Spring Bean的各种元素 
 		BeanDefinitionParserDelegate parent = this.delegate;
 		this.delegate = createDelegate(this.readerContext, root, parent);
 
